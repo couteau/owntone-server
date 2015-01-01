@@ -48,6 +48,9 @@
 
 #include <getopt.h>
 #include <event.h>
+#ifdef HAVE_LIBEVENT2
+# include <event2/thread.h>
+#endif
 #include <libavutil/log.h>
 #include <libavformat/avformat.h>
 
@@ -642,7 +645,22 @@ main(int argc, char **argv)
     }
 
   /* Initialize libevent (after forking) */
+#ifdef HAVE_LIBEVENT2
+  #if (defined(WIN32) || defined(HAVE_LIBEVENT_PTHREADS))
+    DPRINTF(E_DBG, L_MAIN, "Initializing multithreaded event loop support.\n");
+    #ifdef WIN32
+      ret = evthread_use_windows_threads();
+    #endif
+    #ifdef HAVE_LIBEVENT_PTHREADS
+      ret = evthread_use_pthreads();
+    #endif
+    if (ret != 0)
+	  DPRINTF(E_LOG, L_MAIN, "Failed to initialize event threading.\n");
+  #endif
+  evbase_main = event_base_new(); /* libevent2 thread-safe version */
+#else
   evbase_main = event_init();
+#endif
 
   DPRINTF(E_LOG, L_MAIN, "mDNS init\n");
   ret = mdns_init();
