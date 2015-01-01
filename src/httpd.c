@@ -51,6 +51,7 @@
 #include "httpd_rsp.h"
 #include "httpd_daap.h"
 #include "httpd_dacp.h"
+#include "httpd_adm.h"
 #include "transcode.h"
 
 /*
@@ -1035,6 +1036,12 @@ httpd_gen_cb(struct evhttp_request *req, void *arg)
 
       goto out;
     }
+  else if (adm_is_request(req, uri))
+    {
+      adm_request(req);
+
+      goto out;
+    }
 
   DPRINTF(E_DBG, L_HTTPD, "HTTP request: %s\n", uri);
 
@@ -1312,6 +1319,14 @@ httpd_init(void)
       goto dacp_fail;
     }
 
+  ret = adm_init();
+  if (ret < 0)
+	{
+	  DPRINTF(E_FATAL, L_HTTPD, "Web interface init failed\n");
+
+	  goto adm_fail;
+	}
+
 #ifdef USE_EVENTFD
   exit_efd = eventfd(0, EFD_CLOEXEC);
   if (exit_efd < 0)
@@ -1394,6 +1409,8 @@ httpd_init(void)
   close(exit_pipe[1]);
 #endif
  pipe_fail:
+  adm_deinit();
+ adm_fail:
   dacp_deinit();
  dacp_fail:
   daap_deinit();
@@ -1442,6 +1459,7 @@ httpd_deinit(void)
   rsp_deinit();
   dacp_deinit();
   daap_deinit();
+  adm_deinit();
 
 #ifdef USE_EVENTFD
   close(exit_efd);
