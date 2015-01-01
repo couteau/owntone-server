@@ -30,8 +30,9 @@
 #define L_LASTFM  21
 #define L_CACHE   22
 #define L_MPD     23
+#define L_ADMIN   24
 
-#define N_LOGDOMAINS  24
+#define N_LOGDOMAINS  25
 
 /* Severities */
 #define E_FATAL   0
