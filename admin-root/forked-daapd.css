@@ -1,0 +1,63 @@
+/*
+Copyright (C) 2014 Stuart C. Naifeh
+Licensed under the cc-nc-sa 4.0 license
+*/
+
+.fd_option {
+  margin: 1em 0 0 0;
+}
+
+input {
+  color: #F57E24;
+}
+
+label {
+  display: inline-block;
+}
+
+.status {
+  clear: none;
+  float: left;
+  margin: -1em 0 0 0;
+}
+
+.status dd {
+  clear: right;
+  margin: 1em 0 0 0;
+  color: #F57E24;
+}
+
+.status dt {
+  width: 180px;
+  clear: left;
+  margin: 1em 0 0 10px;
+}
+
+.remove_directory {
+  margin-left: 10px;
+}
+#rescan_buttons, .form_buttons {
+  padding-top: 10px;
+  padding-left: 10px;
+  clear: left;
+}
+
+#rescan_buttons button {
+  width: 150px;
+}
+
+.form_buttons button {
+  width: 100px;
+}
+
+input.invalid, textarea.invalid {
+  border: 2px solid red;
+}
+
+#logging label {
+  width: 90px;
+}
+#directories label {
+  width: 120px;
+}
+

@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <meta name="copyright" content="Copyright (C) 2014-2015 Stuart Naifeh. Artwork Adapted from mt-daapd: Copyright (C) 2003-2007 Ron Pedde <ron@pedde.com>" />
+    <title>forked-daapd - Web Administration</title>
+    <link rel="icon" type="image/png" href="/admin/favicon.ico" />
+    <link rel="copyright" href="https://creativecommons.org/licenses/by/4.0/" />
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="/admin/forked-daapd.css" />
+    <script src="//code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+  </head>
+  <body>
+    <header><img src="/admin/forked-daapd.png" alt="forked-daapd logo" />
+    </header>
+    <div id="config_form">
+      <ul>
+        <li>
+          <a href="#tabs-1">Server Status</a>
+        </li>
+        <li>
+          <a href="#tabs-2">General</a>
+        </li>
+        <li>
+          <a href="#tabs-3">Library</a>
+        </li>
+      </ul>
+      <div id="tabs-1">
+        <fieldset>
+          <legend>
+            Server Details
+          </legend>
+          <dl class="status">
+            <dt class="status">
+              Library Name:
+            </dt>
+            <dd id="libname" class="status"></dd>
+            <dt class="status">
+              Server Version:
+            </dt>
+            <dd id="version" class="status"></dd>
+            <dt class="status">
+              Database Version:
+            </dt>
+            <dd id="db_version" class="status"></dd>
+            <dt class="status">
+              Uptime:
+            </dt>
+            <dd id="uptime" class="status"></dd>
+          </dl>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Library Details
+          </legend>
+          <dl class="status">
+            <dt class="status">
+              Total Media:
+            </dt>
+            <dd id="song_count" class="status"></dd>
+            <dt class="status">
+              Total Playlists:
+            </dt>
+            <dd id="pl_count" class="status"></dd>
+          </dl>
+          <div id="rescan_buttons">
+            <button id="initrescan">
+              Re-scan
+            </button>
+            <button id="fullrescan">
+              Full Re-scan
+            </button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Player Status
+          </legend>
+          <dl class="status">
+            <dt class="status">
+              Player Status:
+            </dt>
+            <dd id="player_status" class="status"></dd>
+          </dl>
+        </fieldset>
+      </div>
+      <div id="tabs-2">
+        <fieldset id="logging">
+          <legend>
+            Logging
+          </Legend>
+          <div class="status">
+            <div class="fd_option">
+              <label for="logfile">Log File</label>
+              <input id="logfile" name="logfile" size="80" title="Location for forked-daapd log file.">
+            </div>
+            <div class="fd_option">
+              <label for="loglevel">Log Level</label>
+              <select name="loglevel" id="loglevel" title="Level of detail to be logged">
+                <option>Fatal</option>
+                <option>Log</option>
+                <option>Warning</option>
+                <option>Info</option>
+                <option>Debug</option>
+                <option>Spam</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Networking
+          </legend>
+          <div class="status">
+            <div class="fd_option">
+              <input type="checkbox" id="ipv6" name="ipv6" title="Listen for ip v6 connections">
+              <label for="ipv6">Use ip v6</label>
+            </div>
+            <div class="fd_option">
+              <label for="port">Port</label>
+              <input id="port" class="number_input" name="port" title="TCP port on which to listen for DAAP connections">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Caching
+          </legend>
+          <div class="status">
+            <div class="fd_option">
+              <label for="daapcache_threshold">Cache Threshold</label>
+              <input id="daapcache_threshold" class="number_input" name="daapcache_threshold" />
+            </div>
+          </div>
+        </fieldset>
+        <div class="form_buttons">
+          <button id="save" class="save">
+            Save
+          </button>
+          <button id="reset" class="reset">
+            Reset
+          </button>
+        </div>
+      </div>
+      <div id="tabs-3">
+        <fieldset>
+          <legend>
+            Library Directories
+          </legend>
+          <div id="directories" class="status directory_list">
+            <input id="library" name="directories[]" />
+            <button class="add_directory fd_option">
+              Add Directory
+            </button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Podcasts
+          </legend>
+          <div id="podcast_directories" class="status directory_list">
+            <input id="podcasts" name="podcast_directories[]" />
+            <button class="add_directory fd_option">
+              Add Directory
+            </button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Audiobooks
+          </legend>
+          <div id="audiobook_directories" class="status directory_list">
+            <input id="audiobooks" name="audiobook_directories[]" />
+            <button class="add_directory fd_option">
+              Add Directory
+            </button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Compilations
+          </legend>
+          <div class= "status">
+            <div id="compilation_directories" class="directory_list">
+              <input id="compilations" name="compilation_directories[]"/>
+              <button class="add_directory fd_option">
+                Add Directory
+              </button>
+            </div>
+            <div class="fd_option">
+              <label for="compilation_artist">Compilation Artist</label>
+              <input id="compilation_artist" name="compilation_artist" />
+            </div>
+          </div>
+        </fieldset>
+        <div class="form_buttons">
+          <button id="save2" class="save">
+            Save
+          </button>
+          <button id="reset2" class="reset">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="/admin/forked-daapd.js"></script>
+  </body>
+</html>
