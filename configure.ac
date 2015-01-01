@@ -186,6 +186,10 @@ else
 	PKG_CHECK_EXISTS([ libevent >= 2.1.4 ], ,
 		AC_DEFINE(HAVE_LIBEVENT2_OLD, 1, [Define to 1 if you have libevent 2 (<2.1.4)])
 	)
+    PKG_CHECK_MODULES(LIBEVENT_PTHREADS, [ libevent_pthreads ],
+        AC_DEFINE(HAVE_LIBEVENT_PTHREADS, 1, [Define to 1 if you have libevent-pthreads]),
+        AC_MSG_WARN([libevent multithreaded support not available -- web interface will not work properly])
+    )
 fi
 
 AC_CHECK_HEADER(antlr3.h, , AC_MSG_ERROR([antlr3.h not found]))
