@@ -254,4 +254,4 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
-AC_OUTPUT(src/Makefile sqlext/Makefile Makefile)
+AC_OUTPUT(src/Makefile sqlext/Makefile admin-root/Makefile Makefile)
