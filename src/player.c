@@ -39,6 +39,8 @@
 # include <sys/timerfd.h>
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 # include <signal.h>
+#elif defined(__APPLE__)
+#include "timer.h"
 #endif
 
 #include <event2/event.h>
@@ -195,7 +197,7 @@ static char consume;
 /* Playback timer */
 #ifdef HAVE_TIMERFD
 static int pb_timer_fd;
-#else
+#elif !defined(__APPLE__)
 timer_t pb_timer;
 #endif
 static struct event *pb_timer_ev;
@@ -391,6 +393,11 @@ pb_timer_start(void)
 
 #ifdef HAVE_TIMERFD
   ret = timerfd_settime(pb_timer_fd, 0, &tick, NULL);
+#elif defined(__APPLE__)
+  struct itimerval itv;
+  TIMESPEC_TO_TIMEVAL(&itv.it_interval, &tick.it_interval);
+  TIMESPEC_TO_TIMEVAL(&itv.it_value, &tick.it_value);
+  ret = setitimer(ITIMER_REAL, &itv, NULL);
 #else
   ret = timer_settime(pb_timer, 0, &tick, NULL);
 #endif
@@ -414,6 +421,10 @@ pb_timer_stop(void)
 
 #ifdef HAVE_TIMERFD
   ret = timerfd_settime(pb_timer_fd, 0, &tick, NULL);
+#elif defined(__APPLE__)
+  struct itimerval itv;
+  memset(&itv, 0, sizeof(struct itimerval));
+  ret = setitimer(ITIMER_REAL, &itv, NULL);
 #else
   ret = timer_settime(pb_timer, 0, &tick, NULL);
 #endif
@@ -1457,6 +1468,8 @@ player_playback_cb(int fd, short what, void *arg)
     DPRINTF(E_LOG, L_PLAYER, "Error reading timer\n");
   else if (overrun > 0)
     overrun--;
+#elif defined(__APPLE__)
+  ret = 0;
 #else
   ret = timer_getoverrun(pb_timer);
   if (ret < 0)
@@ -3394,6 +3407,10 @@ player(void *arg)
   struct output_device *device;
   int ret;
 
+#if defined(__APPLE__)
+  pthread_setname_np("player");
+#endif
+
   ret = db_perthread_init();
   if (ret < 0)
     {
@@ -3466,7 +3483,7 @@ player_init(void)
       return -1;
     }
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
   /* FreeBSD will report a resolution of 1, but actually has a resolution
    * larger than an audio packet
    */
@@ -3482,6 +3499,8 @@ player_init(void)
 #ifdef HAVE_TIMERFD
   pb_timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
   ret = pb_timer_fd;
+#elif defined(__APPLE__)
+  ret = 0;
 #else
   ret = timer_create(CLOCK_MONOTONIC, NULL, &pb_timer);
 #endif
@@ -3540,10 +3559,13 @@ player_init(void)
       DPRINTF(E_FATAL, L_PLAYER, "Could not spawn player thread: %s\n", strerror(errno));
       goto thread_fail;
     }
+
+#if !defined(__APPLE__)
 #if defined(HAVE_PTHREAD_SETNAME_NP)
   pthread_setname_np(tid_player, "player");
 #elif defined(HAVE_PTHREAD_SET_NAME_NP)
   pthread_set_name_np(tid_player, "player");
+#endif
 #endif
 
   return 0;
@@ -3559,7 +3581,7 @@ player_init(void)
  audio_fail:
 #ifdef HAVE_TIMERFD
   close(pb_timer_fd);
-#else
+#elif !defined(__APPLE__)
   timer_delete(pb_timer);
 #endif
 
@@ -3588,7 +3610,7 @@ player_deinit(void)
   pb_timer_stop();
 #ifdef HAVE_TIMERFD
   close(pb_timer_fd);
-#else
+#elif !defined(__APPLE__)
   timer_delete(pb_timer);
 #endif
 
