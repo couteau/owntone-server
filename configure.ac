@@ -60,8 +60,7 @@ AC_SEARCH_LIBS([clock_gettime], [rt], [],
 	[AC_MSG_ERROR([[Missing clock_gettime]])])
 
 dnl check for timer_settime
-AC_SEARCH_LIBS([timer_settime], [rt], [],
-	[AC_MSG_ERROR([[Missing timer_settime]])])
+AC_SEARCH_LIBS([timer_settime], [rt])
 
 AC_SEARCH_LIBS([pthread_exit], [pthread], [],
 	[AC_MSG_ERROR([[pthreads library is required]])])
@@ -73,7 +72,9 @@ AC_SEARCH_LIBS([pthread_setname_np], [pthread],
 		[AC_MSG_RESULT([yes])
 		 AC_DEFINE([HAVE_PTHREAD_SETNAME_NP], 1,
 			[Define to 1 if you have pthread_setname_np])],
-		[AC_MSG_RESULT([[no]])])],
+		[AC_MSG_RESULT([[no]])
+                 AC_DEFINE([HAVE_PTHREAD_SETNAME_NP_ONEPARAM], 1, 
+                        [Define to 1 if you have a pthread_setname_np that takes only one parameter])])],
 	[AC_SEARCH_LIBS([pthread_set_name_np], [pthread],
 		[AC_CHECK_FUNCS([pthread_set_name_np])])])
 
@@ -103,7 +104,21 @@ FORK_MODULES_CHECK([FORKED], [MINIXML], [mxml], [mxmlNewElement], [mxml.h],
 	[AC_CHECK_FUNCS([mxmlGetOpaque])])
 
 FORK_MODULES_CHECK([FORKED], [AVAHI], [avahi-client >= 0.6.24],
-	[avahi_client_new], [avahi-client/client.h])
+	[avahi_client_new], [avahi-client/client.h],, trydnssd=true)
+
+AM_CONDITIONAL(COND_AVAHI, false)
+AM_CONDITIONAL(COND_DNSSD, false)
+
+if test x$trydnssd = xtrue; then
+	AC_MSG_CHECKING([Avahi not found. Trying dns_sd...])
+        AC_CHECK_HEADER(dns_sd.h,
+            [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd],
+            [AC_DEFINE(HAVE_DNSSD, 1, [Defined to use Bonjour DNS_SD])])],
+            [AC_MSG_ERROR([dns_sd.h not found])])
+        AM_CONDITIONAL(COND_DNSSD, true)
+else
+        AM_CONDITIONAL(COND_AVAHI, true)
+fi
 
 dnl SQLite3 requires extra checks
 FORK_MODULES_CHECK([COMMON], [SQLITE3], [sqlite3 >= 3.5.0],
@@ -184,17 +199,6 @@ AC_CHECK_HEADER([sys/signalfd.h], [AC_CHECK_FUNCS([signalfd], [have_signal=yes])
 AC_CHECK_HEADER([sys/event.h], [AC_CHECK_FUNCS([kqueue], [have_signal=yes])])
 AS_IF([[test "$have_signal" = "no"]],
 	[AC_MSG_ERROR([[Either signalfd or kqueue are required]])])
-
-AC_CHECK_HEADERS_ONCE([endian.h sys/endian.h])
-AC_CHECK_DECL([htobe16], [],
-	[AC_MSG_FAILURE([[Missing functions to swap byte order]])],
-	[AC_INCLUDES_DEFAULT[
-#ifdef HAVE_ENDIAN_H
-# include <endian.h>
-#elif defined(HAVE_SYS_ENDIAN_H)
-# include <sys/endian.h>
-#endif
-	]])
 
 AC_CHECK_SIZEOF([void *])
 
