@@ -92,7 +92,7 @@ command_cb_sync(struct commands_base *cmdbase, struct command *cmd)
     {
       // Command execution finished, execute the bottom half function
       if (cmd->ret == 0 && cmd->func_bh)
-	cmd->func_bh(cmd->arg, &cmd->ret);
+        cmd->func_bh(cmd->arg, &cmd->ret);
 
       // Signal the calling thread that the command execution finished
       pthread_cond_signal(&cmd->cond);
@@ -318,6 +318,20 @@ commands_exec_sync(struct commands_base *cmdbase, command_function func, command
   cmd.arg = arg;
   cmd.nonblock = 0;
 
+  ret = pthread_mutex_init(&cmd.lck, NULL);
+  if (ret < 0)
+    {
+        DPRINTF(E_LOG, L_MAIN, "Error initializing mutex: %s\n", strerror(ret));
+        return -1;
+    }
+  ret = pthread_cond_init(&cmd.cond, NULL);
+  if (ret < 0)
+    {
+      DPRINTF(E_LOG, L_MAIN, "Error initializing condition: %s\n", strerror(ret));
+      pthread_mutex_destroy(&cmd.lck);
+      return -1;
+    }
+
   pthread_mutex_lock(&cmd.lck);
 
   ret = send_command(cmdbase, &cmd);
@@ -325,11 +339,15 @@ commands_exec_sync(struct commands_base *cmdbase, command_function func, command
     {
       DPRINTF(E_LOG, L_MAIN, "Error sending command\n");
       pthread_mutex_unlock(&cmd.lck);
+      pthread_cond_destroy(&cmd.cond);
+      pthread_mutex_destroy(&cmd.lck);
       return -1;
     }
 
   pthread_cond_wait(&cmd.cond, &cmd.lck);
   pthread_mutex_unlock(&cmd.lck);
+  pthread_cond_destroy(&cmd.cond);
+  pthread_mutex_destroy(&cmd.lck);
 
   return cmd.ret;
 }
