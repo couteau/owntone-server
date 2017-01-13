@@ -1282,6 +1282,10 @@ cache(void *arg)
 {
   int ret;
 
+#ifdef HAVE_PTHREAD_SETNAME_NP_ONEPARAM
+  pthread_setname_np("cache");
+#endif
+
   ret = cache_create();
   if (ret < 0)
     {

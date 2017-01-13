@@ -1261,6 +1261,11 @@ filescanner(void *arg)
 {
   int clear_queue_on_stop_disabled;
   int ret;
+
+#ifdef HAVE_PTHREAD_SETNAME_NP_ONEPARAM
+  pthread_setname_np("httpd");
+#endif
+
 #ifdef __linux__
   struct sched_param param;
 

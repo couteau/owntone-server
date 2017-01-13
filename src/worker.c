@@ -108,6 +108,10 @@ worker(void *arg)
 {
   int ret;
 
+#ifdef HAVE_PTHREAD_SETNAME_NP_ONEPARAM
+  pthread_setname_np("worker");
+#endif
+
   ret = db_perthread_init();
   if (ret < 0)
     {
